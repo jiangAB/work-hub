@@ -6,4 +6,4 @@ export const testGet = () => get('/users');
 
 // 查询员工信息
 
-export const getStaffInfo = (params?: { id?: number }) => { if(params) return get(`/staffInfo/${params?.id}`); else return get('/staffInfo');}
+export const getStaffInfo = (params?: object) =>  get('/staffInfo', params);
