@@ -1,0 +1,25 @@
+.demoLogoVertical {
+  height: 32px;
+  margin: 16px;
+  background: rgba(255,255,255,.2);
+  border-radius: 6px;
+}
+
+.layout{
+  height: 100vh;
+  min-width: 1200px;
+}
+
+
+.header {
+  height: 50px;
+  background-color: white;
+  line-height: 50px;
+  overflow: hidden;
+  padding: 0 10px;
+}
+
+.main{
+  overflow-y: scroll;
+  padding: 2px 5px;
+}

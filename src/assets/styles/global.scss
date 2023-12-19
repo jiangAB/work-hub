@@ -1,0 +1,12 @@
+$color: #eee;
+
+$loginBoxColor: rgb(0, 255, 98);
+body{
+  background-color: $color;
+  // 禁止文字选中
+  user-select: none;
+}
+img{
+  // 禁止图片拖动
+  -webkit-user-drag: none;
+}
