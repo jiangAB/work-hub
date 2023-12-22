@@ -17,6 +17,12 @@ export const menuConfig: Array<menuType> = [
   },
   {
     icon: <DesktopOutlined />,
+    menuName: locale.salaryManage,
+    url: '/salarymanage',
+    childrenMenuList:[]
+  },
+  {
+    icon: <DesktopOutlined />,
     menuName: 'page',
     url: '/page',
     childrenMenuList:[

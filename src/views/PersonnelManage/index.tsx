@@ -1,10 +1,23 @@
-import { Button, Form, Input, Col, Row, Divider, Table, Space } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Col,
+  Row,
+  Divider,
+  Table,
+  Space,
+  Modal,
+  Popconfirm,
+  message,
+} from "antd";
 import { useEffect, useState } from "react";
-import { ColumnType } from 'antd/lib/table';
+import { ColumnType } from "antd/lib/table";
 
+import { removeEmptyValues } from "@/utils/index";
 import styles from "./index.module.scss";
-import locale from '@/assets/locale'
-import { getStaffInfo } from "@/api/server"
+import locale from "@/assets/locale";
+import { getStaffInfo } from "@/api/server";
 
 interface Employee {
   id: number;
@@ -14,108 +27,146 @@ interface Employee {
   position: string;
   workplace: string;
   salary: number;
+  editable: boolean;
 }
 
-const columns: ColumnType<Employee>[] = [
-  {
-    title: locale.staffName,
-    width: 200,
-    fixed: 'left',
-    dataIndex: 'staffName',
-    key: 'staffName',
-  },
-  {
-    title: locale.jobNumber,
-    width: 200,
-    dataIndex: 'jobNumber',
-    key: 'jobNumber',
-  },
-  {
-    title: locale.department,
-    width: 200,
-    dataIndex: 'department',
-    key: 'department',
-  },
-  {
-    title: locale.position,
-    width: 200,
-    dataIndex: 'position',
-    key: 'position',
-  },
-  {
-    title: locale.workplace,
-    width: 200,
-    dataIndex: 'workplace',
-    key: 'workplace',
-  },
-  {
-    title: locale.salary,
-    width: 200,
-    dataIndex: 'salary',
-    key: 'salary',
-    render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
-  },
-  {
-    title: locale.operate,
-    key: 'operate',
-    fixed: 'right',
-    render: () => (
-      <Space size="middle">
-        <a>{locale.viewing}</a>
-        <a>{locale.revise}</a>
-        <a>{locale.delete}</a>
-      </Space>
-    ),
-  },
-];
-
-
 export default function PersonnelManage() {
-  const [ tableData, setTableData ] = useState([])
-  const [ search, setsearch ] = useState({})
+  const [tableData, setTableData] = useState<Employee[]>([]);
+  const [search, setsearch] = useState({});
+  const [rowData, setRowData] = useState<Employee>();
+  const [editedRecord, setEditedRecord] = useState<boolean>(false);
+  const [form] = Form.useForm();
   useEffect(() => {
-    getStaffInfo().then((res) => {
-      setTableData(res.data)
-    })
-  },[search])
+    getStaffInfo(search).then((res) => {
+      setTableData(res.data);
+    });
+  }, [search]);
 
   const onFinish = (v: Employee) => {
-    const params = {
-      staffName: v.staffName,
-      jobNumber: v.jobNumber,
-      department: v.department
-    }
-    getStaffInfo(params).then((res) => {
-      setTableData(res.data)
-    })
+    const newSearchParams = removeEmptyValues(v);
+    setsearch(newSearchParams);
   };
+
+  const handleEdit = (v: Employee) => {
+    console.log(v);
+    setRowData(v);
+    console.log(form);
+    form.setFieldsValue(v);
+    setEditedRecord(true);
+  };
+  const editStaff = () => {
+    form
+    .validateFields()
+    .then((values) => {
+      const newArray = tableData?.map((item: Employee) => (item.id === values.id ? values : item));
+      setTableData(newArray)
+      message.success(locale.editSuccess)
+      setEditedRecord(false)
+    })
+    .catch((info) => {
+      console.log(info);
+    });
+  }
+
+  const handleDelete = (v: number) => {
+    console.log(v,'删除功能');
+    setTableData(tableData.filter((item: Employee) => item.id !== v))
+  }
+
+  const cancel = () => {
+    setEditedRecord(false);
+  };
+
+  const columns: ColumnType<Employee>[] = [
+    {
+      title: locale.staffName,
+      width: 100,
+      fixed: "left",
+      dataIndex: "staffName",
+      key: "staffName",
+    },
+    {
+      title: locale.jobNumber,
+      width: 200,
+      dataIndex: "jobNumber",
+      key: "jobNumber",
+    },
+    {
+      title: locale.department,
+      width: 200,
+      dataIndex: "department",
+      key: "department",
+    },
+    {
+      title: locale.position,
+      width: 200,
+      dataIndex: "position",
+      key: "position",
+    },
+    {
+      title: locale.workplace,
+      width: 200,
+      dataIndex: "workplace",
+      key: "workplace",
+    },
+    {
+      title: locale.salary,
+      dataIndex: "salary",
+      key: "salary",
+      render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
+      sorter: (a, b) => a.salary - b.salary,
+    },
+    {
+      title: locale.operate,
+      key: "operate",
+      fixed: "right",
+      width: 150,
+      render: (_, v) => (
+        <Space size="middle">
+          <a  onClick={() => handleEdit(v)}>{locale.revise}</a>
+          <Popconfirm title={locale.areSureDelete} okText={locale.confirm} cancelText={locale.cancel} onConfirm={() => handleDelete(v.id)}>
+            <a>{locale.delete}</a>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <div className={styles.perContent}>
-      <Form onFinish={onFinish}  className={styles.formStyle} >
-        <Row gutter={24} >
+      <Form onFinish={onFinish} className={styles.formStyle}>
+        <Row gutter={24}>
           <Col span={6}>
             <Form.Item name="staffName" label={locale.staffName}>
               <Input></Input>
             </Form.Item>
           </Col>
-          <Col  span={6} >
+          <Col span={6}>
             <Form.Item name="jobNumber" label={locale.jobNumber}>
               <Input></Input>
             </Form.Item>
           </Col>
-          <Col  span={6} >
+          <Col span={6}>
             <Form.Item name="department" label={locale.department}>
               <Input></Input>
             </Form.Item>
           </Col>
         </Row>
-        <Row justify='end' style={{ height: 35 }} >
+        <Row justify="end" style={{ height: 35 }}>
           <Col span={4}>
             <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ marginRight: 5 }} >
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{ marginRight: 5 }}
+              >
                 {locale.search}
               </Button>
-              <Button type="primary" htmlType="reset" onClick={() => setsearch({})} >
+              <Button
+                type="primary"
+                htmlType="reset"
+                onClick={() => setsearch({})}
+              >
                 {locale.reset}
               </Button>
             </Form.Item>
@@ -128,9 +179,37 @@ export default function PersonnelManage() {
         dataSource={tableData}
         rowKey="id"
         scroll={{ x: 1600 }}
-      >
+        bordered
+      ></Table>
 
-      </Table>
+      <Modal
+        forceRender={true}
+        title={locale.revise}
+        open={editedRecord}
+        onCancel={cancel}
+        onOk={() => editStaff()}
+      >
+        <Form form={form} initialValues={rowData} labelCol={{ span: 3 }} style={{ marginTop: 30 }} >
+          <Form.Item label={locale.staffName} name="staffName">
+            <Input />
+          </Form.Item>
+          <Form.Item label={locale.jobNumber} name="jobNumber">
+            <Input readOnly />
+          </Form.Item>
+          <Form.Item label={locale.department} name="department">
+            <Input />
+          </Form.Item>
+          <Form.Item label={locale.position} name="position">
+            <Input />
+          </Form.Item>
+          <Form.Item label={locale.workplace} name="workplace">
+            <Input />
+          </Form.Item>
+          <Form.Item label={locale.salary} name="salary">
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }
