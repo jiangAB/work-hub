@@ -201,5 +201,82 @@
       "workplace": "深圳",
       "salary": 85000
     }
+  ],
+  "salary": [
+    {
+      "salaryId":1,
+      "staffId": 1,
+      "staffName": "张三",
+      "jobNumber": "G001",
+      "department": "技术部",
+      "fiveInsuranceOneFund": 200,
+      "basicSalary": 3500,
+      "housingSubsidy": 800,
+      "mealSubsidy": 600,
+      "bonus": 400,
+      "commission": 5500,
+      "grossSalary": 1600,
+      "netSalary": 2800
+    },
+    {
+      "salaryId":2,
+      "staffId": 2,
+      "staffName": "李四",
+      "jobNumber": "G002",
+      "department": "市场部",
+      "fiveInsuranceOneFund": 300,
+      "basicSalary": 4200,
+      "housingSubsidy": 450,
+      "mealSubsidy": 700,
+      "bonus": 100,
+      "commission": 4100,
+      "grossSalary": 1300,
+      "netSalary": 2200
+    },
+    {
+      "salaryId":3,
+      "staffId": 3,
+      "staffName": "王五",
+      "jobNumber": "G003",
+      "department": "人力资源部",
+      "fiveInsuranceOneFund": 250,
+      "basicSalary": 3800,
+      "housingSubsidy": 550,
+      "mealSubsidy": 550,
+      "bonus": 300,
+      "commission": 4800,
+      "grossSalary": 1400,
+      "netSalary": 2700
+    },
+    {
+      "salaryId":4,
+      "staffId": 4,
+      "staffName": "赵六",
+      "jobNumber": "G004",
+      "department": "财务部",
+      "fiveInsuranceOneFund": 280,
+      "basicSalary": 4100,
+      "housingSubsidy": 480,
+      "mealSubsidy": 530,
+      "bonus": 150,
+      "commission": 4300,
+      "grossSalary": 1500,
+      "netSalary": 2600
+    },
+    {
+      "salaryId":5,
+      "staffId": 5,
+      "staffName": "钱七",
+      "jobNumber": "G005",
+      "department": "技术部",
+      "fiveInsuranceOneFund": 320,
+      "basicSalary": 3900,
+      "housingSubsidy": 520,
+      "mealSubsidy": 560,
+      "bonus": 250,
+      "commission": 4700,
+      "grossSalary": 1450,
+      "netSalary": 2550
+    }
   ]
 }

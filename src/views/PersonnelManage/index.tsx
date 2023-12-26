@@ -48,16 +48,15 @@ export default function PersonnelManage() {
   };
 
   const handleEdit = (v: Employee) => {
-    console.log(v);
     setRowData(v);
-    console.log(form);
     form.setFieldsValue(v);
     setEditedRecord(true);
   };
-  const editStaff = () => {
+  const editStaff = (id?: number) => {
     form
     .validateFields()
     .then((values) => {
+      values.id = id
       const newArray = tableData?.map((item: Employee) => (item.id === values.id ? values : item));
       setTableData(newArray)
       message.success(locale.editSuccess)
@@ -76,6 +75,15 @@ export default function PersonnelManage() {
   const cancel = () => {
     setEditedRecord(false);
   };
+
+  const tablePrint = () => {
+    /* const originalContents = document.body.innerHTML;
+    const printableArea = document.getElementById('tablePrint')
+    const printContents = printableArea.innerHTML;
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents; */
+  }
 
   const columns: ColumnType<Employee>[] = [
     {
@@ -169,12 +177,20 @@ export default function PersonnelManage() {
               >
                 {locale.reset}
               </Button>
+              <Button
+                type="primary"
+                htmlType="reset"
+                onClick={() => tablePrint()}
+              >
+                {locale.print}
+              </Button>
             </Form.Item>
           </Col>
         </Row>
       </Form>
       <Divider />
-      <Table
+      <Table 
+        id="tablePrint"
         columns={columns}
         dataSource={tableData}
         rowKey="id"
@@ -187,9 +203,9 @@ export default function PersonnelManage() {
         title={locale.revise}
         open={editedRecord}
         onCancel={cancel}
-        onOk={() => editStaff()}
+        onOk={() => editStaff(rowData?.id)}
       >
-        <Form form={form} initialValues={rowData} labelCol={{ span: 3 }} style={{ marginTop: 30 }} >
+        <Form form={form} initialValues={rowData} labelCol={{ span: 4 }} style={{ marginTop: 30 }} >
           <Form.Item label={locale.staffName} name="staffName">
             <Input />
           </Form.Item>

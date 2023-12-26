@@ -18,6 +18,7 @@ export default {
   revise: '修改',
   delete: '删除',
   viewing: '查看',
+  print: '打印',
 
   // personnelManage
   staffName: '姓名',
@@ -27,5 +28,14 @@ export default {
   position: '职位',
   workplace: '工作地',
   salary: '基本工资(月)',
-  RMB: '¥' 
+  RMB: '¥' ,
+
+  // SalaryManage
+  basicSalary: '基本工资',
+  housingSubsidy: '住房补贴',
+  mealSubsidy: '餐费补贴',
+  bonus: '奖金',
+  commission: '提成',
+  grossSalary: '应发工资',
+  netSalary: '实发工资',
 };

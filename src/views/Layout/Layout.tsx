@@ -51,7 +51,7 @@ const View: React.FC = () => {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={["/personnelmanage"]}
+          defaultSelectedKeys={["/personnelmanage","/salarymanage"]}
           items={items}
           onClick={menuClick}
         />
