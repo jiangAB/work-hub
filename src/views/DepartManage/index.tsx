@@ -81,9 +81,7 @@ export default function DepartManage() {
     const params = {
       departmentId: v
     }
-    console.log(params)
-    deleteDepart(params).then((res) => {
-      console.log(res);
+    deleteDepart(params).then(() => {
       message.success(locale.deleteSuccess)
       setDepartData(departData?.filter((item: departType) => item.departmentId !== v))
     })
@@ -108,12 +106,10 @@ export default function DepartManage() {
     form
       .validateFields()
       .then((values) => {
-        addDeparts(values).then((res) => {
-          console.log(res)
+        addDeparts(values).then(() => {
           setEditedRecord(false);
           message.success(locale.addSuccess)
         })
-        console.log(values)
       })
       .catch((info) => {
         console.log(info);
@@ -127,7 +123,6 @@ export default function DepartManage() {
         updateDepartment(values).then((res) => {
           console.log(res);
         })
-        console.log(values)
         const newArray = departData?.map((item: departType) => (item.departmentId === values.departmentId ? values : item));
         setDepartData(newArray)
         message.success(locale.editSuccess)
@@ -161,9 +156,7 @@ export default function DepartManage() {
     const params = {
       positionId: v
     }
-    console.log(params)
-    deletePosition(params).then((res) => {
-      console.log(res);
+    deletePosition(params).then(() => {
       message.success(locale.deleteSuccess)
       setPositionData(positionData?.filter((item: positionType) => item.positionId !== v))
     }).catch((error) => {
@@ -229,7 +222,7 @@ export default function DepartManage() {
   ];
   const poitioncolumns: ColumnType<positionType>[] = [
     {
-      title: locale.departmentName,
+      title: locale.positionName,
       width: 200,
       dataIndex: "positionName",
       key: "positionName",

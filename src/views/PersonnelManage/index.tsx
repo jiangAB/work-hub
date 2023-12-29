@@ -112,12 +112,12 @@ export default function PersonnelManage() {
       .then((values) => {
         values.staffId = staffId
         updateStaffInfo(values).then((res) => {
-          console.log(res);
-        })
-        const newArray = tableData?.map((item: Employee) => (item.staffId === values.staffId ? values : item));
+        const newArray = tableData?.map((item: Employee) => (item.staffId === res.data.staffId ? res.data : item));
         setTableData(newArray)
         message.success(locale.editSuccess)
         setEditedRecord(false)
+        })
+
       })
       .catch((info) => {
         console.log(info);
