@@ -23,6 +23,18 @@ export const menuConfig: Array<menuType> = [
   },
   {
     icon: <DesktopOutlined />,
+    menuName: locale.departManage,
+    url: '/departmanage',
+    childrenMenuList:[]
+  },
+  /* {
+    icon: <DesktopOutlined />,
+    menuName: locale.positionManage,
+    url: '/positionmanage',
+    childrenMenuList:[]
+  }, */
+  /* {
+    icon: <DesktopOutlined />,
     menuName: 'page',
     url: '/page',
     childrenMenuList:[
@@ -39,5 +51,5 @@ export const menuConfig: Array<menuType> = [
         childrenMenuList:[]
       },
     ]
-  }
+  } */
 ]

@@ -30,3 +30,10 @@ export function removeEmptyValues(obj:object): object{
       .filter(([_, value]) => value !== null && value !== undefined && value !== '')
   );
 }
+
+/**
+ * 数据渲染 */
+export function renderTable(arr: Array<{ label: string; value: number }>, value: number) {
+  const matchingItem = arr.find((item) => item.value === value);
+  return matchingItem ? matchingItem.label : value;
+}

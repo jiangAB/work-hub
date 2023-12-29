@@ -26,7 +26,7 @@ $axios.interceptors.response.use(
   },
   (error) => {
     // 对响应错误做点什么
-    const errorMessage = error.response?.data?.message || locale.pleaseCheckTheNetwork;
+    const errorMessage = error.response?.data?.message || error.response?.data || locale.pleaseCheckTheNetwork;
     message.error(errorMessage);
     return Promise.reject(error);
   }

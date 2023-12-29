@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { Layout, NotFound, PersonnelManage, SalaryManage } from "./lazy"; // 懒加载路由
+import { Layout, NotFound, PersonnelManage, SalaryManage, DepartManage, PositionManage, Login } from "./lazy"; // 懒加载路由
 import React from "react";
 
 // 路由切换加载页面
@@ -27,11 +27,23 @@ const routes = [
         element: withLoadingComponent(<SalaryManage />),
       },
       {
+        path: "/departmanage",
+        element: withLoadingComponent(<DepartManage />),
+      },
+      {
+        path: "/positionmanage",
+        element: withLoadingComponent(<PositionManage />),
+      },
+      {
         path: "/*",
         element: withLoadingComponent(<NotFound />),
       }
     ]
   },
+  {
+    path: "/login",
+    element: <Login />
+  }
 /*  {
     path: "/home",
     element: withLoadingComponent(<Home />),

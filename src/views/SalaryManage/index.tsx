@@ -10,39 +10,48 @@ import {
   Modal,
   Popconfirm,
   message,
-  InputNumber
+  InputNumber,
+  Select
 } from "antd";
 import { useEffect, useState } from "react";
 import { ColumnType } from "antd/lib/table";
 
-import { removeEmptyValues } from "@/utils/index";
+import { removeEmptyValues, renderTable } from "@/utils/index";
 import styles from "./index.module.scss";
 import locale from "@/assets/locale";
-import { getSalaryList } from "@/api/server";
+import { getSalaryList, getDepartment, updateSalary } from "@/api/server";
 
 interface salartType {
-  salaryId: number;
   staffId: number;
   staffName: string;
   jobNumber: string;
-  department: string;
+  departmentId: number;
   fiveInsuranceOneFund: number;
   basicSalary: number;
+  housingSubsidy: number
   mealSubsidy: number;
   bonus: number;
   commission: number;
   grossSalary: number;
-  netSalary: number;
+}
+interface Deparment {
+  departmentId?: number;
+  departmentName?: string;
 }
 
 export default function SalaryManage() {
   const [tableData, setTableData] = useState<salartType[]>([]);
   const [search, setsearch] = useState({});
   const [rowData, setRowData] = useState<salartType>();
+  const [departmentSelect,setDepartmentSelect] = useState([]); // 部门信息
   const [editedRecord, setEditedRecord] = useState<boolean>(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
+    getDepartment().then((res) => {
+      const departmentList = res.data.map((item: Deparment) => ({label: item.departmentName, value: item.departmentId}))
+      setDepartmentSelect(departmentList);
+    })
     getSalaryList(search).then((res) => {
       setTableData(res.data);
     });
@@ -62,16 +71,18 @@ export default function SalaryManage() {
     form
       .validateFields()
       .then((values) => {
-        values.salaryId = salary?.salaryId;
-        values.staffName = salary?.staffName;
-        values.jobNumber = salary?.jobNumber;
-        values.department = salary?.department;
-        const newArray = tableData?.map((item: salartType) =>
-          item.salaryId === values.salaryId ? values : item
-        );
-        setTableData(newArray);
-        message.success(locale.editSuccess);
-        setEditedRecord(false);
+        values.staffId = salary?.staffId;
+        updateSalary(values).then((res) => {
+          values = res.data
+          const newArray = tableData?.map((item: salartType) => item.staffId === res.data.staffId ? res.data : item);
+          setTableData(newArray);
+          console.log(newArray)
+          setsearch({});
+          setEditedRecord(false);
+          message.success(locale.editSuccess);
+
+        })
+
       })
       .catch((info) => {
         console.log(info);
@@ -87,76 +98,75 @@ export default function SalaryManage() {
     setEditedRecord(false);
   };
 
-  const tablePrint = () => {
+  /* const tablePrint = () => {
     
-  };
+  }; */
 
   const columns: ColumnType<salartType>[] = [
     {
       title: locale.staffName,
-      width: 150,
       fixed: "left",
+      width: 200,
       dataIndex: "staffName",
       key: "staffName",
       render: (_, v) => (
-        <div>{v.staffName + "-" + v.jobNumber + "-" + v.department} </div>
+        <div>{v.staffName + "-" + v.jobNumber + "-" + renderTable(departmentSelect,v.departmentId)} </div>
       ),
     },
     {
       title: locale.basicSalary,
-      width: 200,
+      width: 120,
       dataIndex: "basicSalary",
       key: "basicSalary",
       render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
     },
     {
+      title: locale.fiveInsuranceOneFund,
+      width: 120,
+      dataIndex: "fiveInsuranceOneFund",
+      key: "fiveInsuranceOneFund",
+      render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
+    },
+    {
       title: locale.housingSubsidy,
-      width: 200,
+      width: 120,
       dataIndex: "housingSubsidy",
       key: "housingSubsidy",
       render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
     },
     {
       title: locale.mealSubsidy,
-      width: 200,
+      width: 120,
       dataIndex: "mealSubsidy",
       key: "positmealSubsidyion",
       render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
     },
     {
       title: locale.bonus,
-      width: 200,
+      width: 120,
       dataIndex: "bonus",
       key: "bonus",
       render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
     },
     {
       title: locale.commission,
-      width: 200,
+      width: 120,
       dataIndex: "commission",
       key: "commission",
       render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
     },
     {
       title: locale.grossSalary,
-      width: 200,
       dataIndex: "grossSalary",
       key: "grossSalary",
+      width:150,
       render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
-    },
-    {
-      title: locale.netSalary,
-      width: 200,
-      dataIndex: "netSalary",
-      key: "netSalary",
-      render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
-      sorter: (a, b) => a.netSalary - b.netSalary,
     },
     {
       title: locale.operate,
       key: "operate",
       fixed: "right",
-      width: 150,
+      width: 180,
       render: (_, v) => (
         <Space size="middle">
           <a onClick={() => handleEdit(v)}>{locale.revise}</a>
@@ -166,7 +176,7 @@ export default function SalaryManage() {
             cancelText={locale.cancel}
             onConfirm={() => handleDelete(v.staffId)}
           >
-            <a>{locale.delete}</a>
+            {/* <a>{locale.delete}</a> */}
           </Popconfirm>
         </Space>
       ),
@@ -188,8 +198,8 @@ export default function SalaryManage() {
             </Form.Item>
           </Col>
           <Col span={6}>
-            <Form.Item name="department" label={locale.department}>
-              <Input></Input>
+            <Form.Item name="departmentId" label={locale.department}>
+              <Select options={departmentSelect} />
             </Form.Item>
           </Col>
         </Row>
@@ -210,13 +220,13 @@ export default function SalaryManage() {
               >
                 {locale.reset}
               </Button>
-              <Button
+              {/* <Button
                 type="primary"
                 htmlType="reset"
                 onClick={() => tablePrint()}
               >
                 {locale.print}
-              </Button>
+              </Button> */}
             </Form.Item>
           </Col>
         </Row>
@@ -226,8 +236,7 @@ export default function SalaryManage() {
         id="tablePrint"
         columns={columns}
         dataSource={tableData}
-        rowKey="salaryId"
-        scroll={{ x: 1600 }}
+        rowKey="staffId"
         bordered
       ></Table>
 
@@ -238,7 +247,7 @@ export default function SalaryManage() {
           "-" +
           rowData?.jobNumber +
           "-" +
-          rowData?.department
+          rowData?.departmentId
         }
         open={editedRecord}
         onCancel={cancel}
@@ -250,6 +259,9 @@ export default function SalaryManage() {
           labelCol={{ span: 4 }}
           style={{ marginTop: 30 }}
         >
+          <Form.Item label={locale.fiveInsuranceOneFund} name="fiveInsuranceOneFund">
+            <InputNumber />
+          </Form.Item>
           <Form.Item label={locale.basicSalary} name="basicSalary">
             <InputNumber />
           </Form.Item>
@@ -266,10 +278,7 @@ export default function SalaryManage() {
             <InputNumber />
           </Form.Item>
           <Form.Item label={locale.grossSalary} name="grossSalary">
-            <InputNumber />
-          </Form.Item>
-          <Form.Item label={locale.netSalary} name="netSalary">
-            <InputNumber />
+            <InputNumber readOnly />
           </Form.Item>
         </Form>
       </Modal>

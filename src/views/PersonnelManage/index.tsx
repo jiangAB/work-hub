@@ -10,24 +10,36 @@ import {
   Modal,
   Popconfirm,
   message,
+  Select
 } from "antd";
 import { useEffect, useState } from "react";
 import { ColumnType } from "antd/lib/table";
 
-import { removeEmptyValues } from "@/utils/index";
+import { removeEmptyValues, renderTable } from "@/utils/index";
 import styles from "./index.module.scss";
 import locale from "@/assets/locale";
-import { getStaffInfo } from "@/api/server";
+import { getStaffInfo, updateStaffInfo, getDepartment, getPositions, addStaffInfo, deleteStaffInfo } from "@/api/server";
 
 interface Employee {
-  id: number;
-  jobNumber: string;
-  staffName: string;
-  department: string;
-  position: string;
-  workplace: string;
-  salary: number;
-  editable: boolean;
+  staffId?: number;
+  jobNumber?: string;
+  staffName?: string;
+  department?: string;
+  departmentId?: number;
+  position?: string;
+  positionId?: number;
+  workplace?: string;
+  grossSalary?: number;
+  editable?: boolean;
+}
+interface Deparment {
+  departmentId?: number;
+  departmentName?: string;
+}
+
+interface Positions {
+  positionId?: number;
+  positionName?: string;
 }
 
 export default function PersonnelManage() {
@@ -35,8 +47,20 @@ export default function PersonnelManage() {
   const [search, setsearch] = useState({});
   const [rowData, setRowData] = useState<Employee>();
   const [editedRecord, setEditedRecord] = useState<boolean>(false);
+  const [departmentSelect,setDepartmentSelect] = useState([]); // 部门信息
+  const [positionsSelect,setPositionsSelect] = useState([]); // 职位信息
+  const [addEditStatus,setAddEditStatus] = useState<boolean>(false)
   const [form] = Form.useForm();
+
   useEffect(() => {
+    getPositions().then((res) => {
+      const positionsList = res.data.map((item: Positions) => ({label: item.positionName, value: item.positionId}))
+      setPositionsSelect(positionsList);
+    })
+    getDepartment().then((res) => {
+      const departmentList = res.data.map((item: Deparment) => ({label: item.departmentName, value: item.departmentId}))
+      setDepartmentSelect(departmentList);
+    })
     getStaffInfo(search).then((res) => {
       setTableData(res.data);
     });
@@ -48,42 +72,81 @@ export default function PersonnelManage() {
   };
 
   const handleEdit = (v: Employee) => {
+    setAddEditStatus(false);
     setRowData(v);
     form.setFieldsValue(v);
     setEditedRecord(true);
   };
-  const editStaff = (id?: number) => {
+  const handleAddStaff = () => {
+    setAddEditStatus(true);
+    const v: Employee = {
+      staffId: undefined,
+      staffName: undefined,
+      jobNumber: undefined,
+      departmentId: undefined,
+      positionId: undefined,
+      workplace: undefined
+    }
+    setRowData(v);
+    form.setFieldsValue(v);
+    setEditedRecord(true);
+  }
+  const addStaff = () => {
     form
-    .validateFields()
-    .then((values) => {
-      values.id = id
-      const newArray = tableData?.map((item: Employee) => (item.id === values.id ? values : item));
-      setTableData(newArray)
-      message.success(locale.editSuccess)
-      setEditedRecord(false)
-    })
-    .catch((info) => {
-      console.log(info);
-    });
+      .validateFields()
+      .then((values) => {
+        addStaffInfo(values).then((res) => {
+          console.log(res)
+          setsearch({})
+          setEditedRecord(false);
+          message.success(locale.addSuccess)
+        })
+      })
+      .catch((info) => {
+        console.log(info);
+      });
+  }
+  const editStaff = (staffId?: number) => {
+    form
+      .validateFields()
+      .then((values) => {
+        values.staffId = staffId
+        updateStaffInfo(values).then((res) => {
+          console.log(res);
+        })
+        const newArray = tableData?.map((item: Employee) => (item.staffId === values.staffId ? values : item));
+        setTableData(newArray)
+        message.success(locale.editSuccess)
+        setEditedRecord(false)
+      })
+      .catch((info) => {
+        console.log(info);
+      });
   }
 
-  const handleDelete = (v: number) => {
-    console.log(v,'删除功能');
-    setTableData(tableData.filter((item: Employee) => item.id !== v))
+  const handleDelete = (v?: number) => {
+    const params = {
+      staffId: v
+    }
+    deleteStaffInfo(params).then((res) => {
+      console.log(res);
+      message.success(locale.deleteSuccess)
+    })
+    setTableData(tableData?.filter((item: Employee) => item.staffId !== v))
   }
 
   const cancel = () => {
     setEditedRecord(false);
   };
 
-  const tablePrint = () => {
-    /* const originalContents = document.body.innerHTML;
+  /* const tablePrint = () => {
+    const originalContents = document.body.innerHTML;
     const printableArea = document.getElementById('tablePrint')
     const printContents = printableArea.innerHTML;
     document.body.innerHTML = printContents;
     window.print();
-    document.body.innerHTML = originalContents; */
-  }
+    document.body.innerHTML = originalContents;
+  } */
 
   const columns: ColumnType<Employee>[] = [
     {
@@ -102,14 +165,20 @@ export default function PersonnelManage() {
     {
       title: locale.department,
       width: 200,
-      dataIndex: "department",
-      key: "department",
+      dataIndex: "departmentId",
+      key: "departmentId",
+      render:(_) => (
+        <div>{renderTable(departmentSelect,_)}</div>
+      )
     },
     {
       title: locale.position,
       width: 200,
-      dataIndex: "position",
-      key: "position",
+      dataIndex: "positionId",
+      key: "positionId",
+      render:(_) => (
+        <div>{renderTable(positionsSelect,_)}</div>
+      )
     },
     {
       title: locale.workplace,
@@ -118,11 +187,15 @@ export default function PersonnelManage() {
       key: "workplace",
     },
     {
-      title: locale.salary,
-      dataIndex: "salary",
-      key: "salary",
+      title: locale.grossSalary,
+      dataIndex: "grossSalary",
+      key: "grossSalary",
       render: (text: number) => `${locale.RMB} ${text.toFixed(2)}`, // 格式化工资显示
-      sorter: (a, b) => a.salary - b.salary,
+      sorter: (a, b) => {
+        if(a.grossSalary && b.grossSalary){
+          return a.grossSalary - b.grossSalary}
+          else return 0
+      }
     },
     {
       title: locale.operate,
@@ -131,8 +204,8 @@ export default function PersonnelManage() {
       width: 150,
       render: (_, v) => (
         <Space size="middle">
-          <a  onClick={() => handleEdit(v)}>{locale.revise}</a>
-          <Popconfirm title={locale.areSureDelete} okText={locale.confirm} cancelText={locale.cancel} onConfirm={() => handleDelete(v.id)}>
+          <a onClick={() => handleEdit(v)}>{locale.revise}</a>
+          <Popconfirm title={locale.areSureDelete} okText={locale.confirm} cancelText={locale.cancel} onConfirm={() => handleDelete(v.staffId)}>
             <a>{locale.delete}</a>
           </Popconfirm>
         </Space>
@@ -155,12 +228,21 @@ export default function PersonnelManage() {
             </Form.Item>
           </Col>
           <Col span={6}>
-            <Form.Item name="department" label={locale.department}>
+            <Form.Item name="departmentName" label={locale.department}>
               <Input></Input>
             </Form.Item>
           </Col>
         </Row>
-        <Row justify="end" style={{ height: 35 }}>
+        <Row justify="space-between" style={{ height: 35 }}>
+          <Col span={2} >
+          <Button
+                type="primary"
+                style={{ marginRight: 5 }}
+                onClick={handleAddStaff}
+              >
+                {locale.add}
+              </Button>
+          </Col>
           <Col span={4}>
             <Form.Item>
               <Button
@@ -173,57 +255,58 @@ export default function PersonnelManage() {
               <Button
                 type="primary"
                 htmlType="reset"
+                style={{ marginRight: 5 }}
                 onClick={() => setsearch({})}
               >
                 {locale.reset}
               </Button>
-              <Button
+              {/* <Button
                 type="primary"
                 htmlType="reset"
                 onClick={() => tablePrint()}
               >
                 {locale.print}
-              </Button>
+              </Button> */}
             </Form.Item>
           </Col>
         </Row>
       </Form>
       <Divider />
-      <Table 
+      <Table
         id="tablePrint"
         columns={columns}
         dataSource={tableData}
-        rowKey="id"
+        rowKey="staffId"
         scroll={{ x: 1600 }}
         bordered
       ></Table>
 
       <Modal
         forceRender={true}
-        title={locale.revise}
+        title={ addEditStatus ? locale.add : locale.revise }
         open={editedRecord}
         onCancel={cancel}
-        onOk={() => editStaff(rowData?.id)}
+        onOk={addEditStatus ? () => addStaff() : () => editStaff(rowData?.staffId)}
       >
         <Form form={form} initialValues={rowData} labelCol={{ span: 4 }} style={{ marginTop: 30 }} >
-          <Form.Item label={locale.staffName} name="staffName">
+          <Form.Item label={locale.staffName} name="staffName" rules={[{ required: true, message: locale.pleaseInput }]}>
             <Input />
           </Form.Item>
-          <Form.Item label={locale.jobNumber} name="jobNumber">
-            <Input readOnly />
+          <Form.Item label={locale.jobNumber} name="jobNumber" rules={[{ required: true, message: locale.pleaseInput }]}>
+            <Input readOnly={!addEditStatus} />
           </Form.Item>
-          <Form.Item label={locale.department} name="department">
+          <Form.Item label={locale.department} name="departmentId" rules={[{ required: true, message: locale.pleaseInput }]}>
+            <Select options={departmentSelect} />
+          </Form.Item>
+          <Form.Item label={locale.position} name="positionId" rules={[{ required: true, message: locale.pleaseInput }]}>
+            <Select options={positionsSelect} />
+          </Form.Item>
+          <Form.Item label={locale.workplace} name="workplace" rules={[{ required: true, message: locale.pleaseInput }]}>
             <Input />
           </Form.Item>
-          <Form.Item label={locale.position} name="position">
+          {/* <Form.Item label={locale.salary} name="salary">
             <Input />
-          </Form.Item>
-          <Form.Item label={locale.workplace} name="workplace">
-            <Input />
-          </Form.Item>
-          <Form.Item label={locale.salary} name="salary">
-            <Input />
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
     </div>

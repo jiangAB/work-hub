@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { MenuProps } from "antd";
-import {  Layout, Menu, Button  } from "antd";
+import {  Layout, Menu, Button, Modal, message  } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons"
 import { menuConfig, menuType } from "@/config/menu";
 import styles from './index.module.scss'
+import locale from "@/assets/locale";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -39,11 +40,35 @@ function listurl(menuConfig: Array<menuType>): MenuItem[]{
 const items: MenuItem[] = listurl(menuConfig)
 const View: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigateTo = useNavigate();
   const menuClick = (e: { key: string }) => {
     navigateTo(e.key);
   };
+  
 
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (!isLoggedIn) {
+      // 本地存储中没有登录信息，跳转到登录页面
+      navigateTo("/login");
+    }
+  }, [navigateTo]);
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    setIsModalOpen(false);
+    localStorage.removeItem("isLoggedIn");
+    message.success(locale.exitLoginSuccess)
+    navigateTo("/login");
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
   return (
     <Layout className={styles.layout}>
       <Sider trigger={null} collapsible={collapsed} collapsed={collapsed}>
@@ -51,7 +76,7 @@ const View: React.FC = () => {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={["/personnelmanage","/salarymanage"]}
+          defaultSelectedKeys={["/personnelmanage"]}
           items={items}
           onClick={menuClick}
         />
@@ -67,6 +92,7 @@ const View: React.FC = () => {
               height: 30,
             }}
           />
+          <Button onClick={showModal} >{locale.exitLogin}</Button>
         </Header>
         <Content className={styles.main}>
           <Outlet />
@@ -75,6 +101,9 @@ const View: React.FC = () => {
           {/* Ant Design ©2023 Created by Ant UED */}
         </Footer>
       </Layout>
+      <Modal title={locale.sureExitLogin} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+        
+      </Modal>
     </Layout>
   );
 };
