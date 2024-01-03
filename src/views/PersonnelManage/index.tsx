@@ -50,19 +50,26 @@ export default function PersonnelManage() {
   const [departmentSelect,setDepartmentSelect] = useState([]); // 部门信息
   const [positionsSelect,setPositionsSelect] = useState([]); // 职位信息
   const [addEditStatus,setAddEditStatus] = useState<boolean>(false)
+  const [loadingStatus,setLoadingStatus] = useState<boolean>(true)
   const [form] = Form.useForm();
 
   useEffect(() => {
+    setLoadingStatus(true);
     getPositions().then((res) => {
       const positionsList = res.data.map((item: Positions) => ({label: item.positionName, value: item.positionId}))
       setPositionsSelect(positionsList);
+      setLoadingStatus(false);
+
     })
     getDepartment().then((res) => {
       const departmentList = res.data.map((item: Deparment) => ({label: item.departmentName, value: item.departmentId}))
       setDepartmentSelect(departmentList);
+      setLoadingStatus(false);
+
     })
     getStaffInfo(search).then((res) => {
       setTableData(res.data);
+      setLoadingStatus(false);
     });
   }, [search]);
 
@@ -279,6 +286,7 @@ export default function PersonnelManage() {
         rowKey="staffId"
         scroll={{ x: 1600 }}
         bordered
+        loading={loadingStatus}
       ></Table>
 
       <Modal
